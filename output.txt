@@ -1,0 +1,4 @@
+The amount of cheeses that use Pasteriuzed Milk equal to: 800
+The amount of cheeses that use Raw Milk equal to: 115
+The amount of organic cheeses with a moisture percent over 41% equal to: 53
+Most of the cheeses in Canada come from: Cows
