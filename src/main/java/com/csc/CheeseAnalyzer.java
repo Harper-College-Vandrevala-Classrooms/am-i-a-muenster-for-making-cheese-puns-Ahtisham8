@@ -5,9 +5,12 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import javax.xml.crypto.Data;
 
 public class CheeseAnalyzer {
   // You can put source code here
@@ -82,10 +85,10 @@ public class CheeseAnalyzer {
 
 
     //Create and write to a file called output.txt
-    public static void writeFile(String text)
+    public static void writeFile(String text, String fileName)
     {
       try {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
         writer.write(text);
         writer.close();
         
@@ -94,6 +97,8 @@ public class CheeseAnalyzer {
         System.out.println("Could not write to the file caled output.txt");
       }
     }
+
+
 
 
     public static void main(String[] args) {
@@ -111,14 +116,23 @@ public class CheeseAnalyzer {
         int moistPercentNum = 0; //Counts for Moisture Percentage over 41%
         String moisPercentString = "";
 
+        double moistPercentSum = 0;
+        int moistPercentAmount = 0;
+        double moistPercentAvg = 0;
+        String moistPercAvgString = "";
+
         int cowNum = 0;
         int goatNum = 0;
         int eweNum = 0;
         int buffaloNum = 0;
+        int lacticNum = 0;
+
         String popularAnimal = "";
         String popularAnimalString = "";
+        String lacticString = "";
 
         String finalString;
+        String withoutHeadersString;
 
         //Read the csv file line by line
         while ((str = reader.readLine()) != null)
@@ -126,17 +140,27 @@ public class CheeseAnalyzer {
           dataArr = str.split(",");
 
           ArrayList<String> data = checkQuotes(dataArr);
+          ArrayList<String> dataWithoutHeaders = new ArrayList<>();
 
           //Check and fill empty spaces with null for missing entries
           for(int i = 0; i < data.size()-1; i++)
           {
+
             if (data.get(i) == "") {
               data.set(i, null);
             }
             if (data.get(i) != null) {
               data.set(i, data.get(i).trim());
             }
+
+            if(!data.get(0).equals("CheeseId"))
+            {
+              dataWithoutHeaders = data;
+            }
+
           }
+
+          
 
           //Calculate the num of Pasteurized and Raw Milk in cheeses
           if (data.get(9) != null && data.get(9).equals("Pasteurized")  ) {
@@ -145,6 +169,8 @@ public class CheeseAnalyzer {
           else if (data.get(9) != null && data.get(9).contains("Raw Milk")) {
             rawMilkNum++;
           }
+
+          
 
           //Calculate Organic cheese with Moisture Percentage over 41%
           try {   
@@ -155,6 +181,13 @@ public class CheeseAnalyzer {
               if (data.get(6).equals("1") && moisturePercent > 41) {
                 moistPercentNum++;
               }
+            }
+
+            //calculate average moist percentage
+            if (data.get(3) != null) {
+              moistPercentAmount++;
+              double currentPercentage = (Double.parseDouble(data.get(3)))/100;
+              moistPercentSum += currentPercentage;
             }
 
              //Also checks and calculates the MilkTypeEn animals
@@ -171,23 +204,30 @@ public class CheeseAnalyzer {
               buffaloNum++;
             }
 
+            if (data.get(4).contains("lactic") || data.get(4).contains("Lactic")) {
+              lacticNum++;
+            }
+
          } catch (NumberFormatException | NullPointerException e) {
          }
-
-
-
         }
-
+        
+        DecimalFormat df = new DecimalFormat("#.0");
+        moistPercentAvg = (moistPercentSum)/moistPercentAmount*100;
+        
         pastuerizedString = "The amount of cheeses that use Pasteriuzed Milk equal to: " + pasteurizedNum;
         rawMilkString = "The amount of cheeses that use Raw Milk equal to: " + rawMilkNum;
         moisPercentString = "The amount of organic cheeses with a moisture percent over 41% equal to: " + moistPercentNum;
         popularAnimal = checkPopularAnimal(cowNum, goatNum, eweNum, buffaloNum);
         popularAnimalString = "Most of the cheeses in Canada come from: " + popularAnimal;
-        finalString = pastuerizedString + "\n" + rawMilkString + "\n" + moisPercentString + "\n" + popularAnimalString; 
+        lacticString = "The amount of cheeses that are described as 'lactic' equal to: " + lacticNum;
+        moistPercAvgString = "The average moisture percentage of all cheeses is: " + df.format(moistPercentAvg) + "%";
+        finalString = pastuerizedString + "\n" + rawMilkString + "\n" + moisPercentString + "\n" + popularAnimalString
+        + "\n" + moistPercAvgString + "\n" + lacticString; 
         System.out.println(finalString);
 
         //Creates and writes to a file called output.txt
-        writeFile(finalString);
+        writeFile(finalString, "output.txt");
         reader.close();
 
       } catch (IOException e) {
